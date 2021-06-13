@@ -1,0 +1,100 @@
+<html>
+<head>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jq-3.3.1/jszip-2.5.0/dt-1.10.25/af-2.3.7/b-1.7.1/b-colvis-1.7.1/b-html5-1.7.1/b-print-1.7.1/cr-1.5.4/date-1.1.0/fc-3.3.3/fh-3.1.9/kt-2.6.2/r-2.2.9/rg-1.1.3/rr-1.2.8/sc-2.0.4/sb-1.1.0/sp-1.3.0/sl-1.3.3/datatables.min.css"/>
+ 
+<script type="text/javascript" src="https://cdn.datatables.net/v/dt/jq-3.3.1/jszip-2.5.0/dt-1.10.25/af-2.3.7/b-1.7.1/b-colvis-1.7.1/b-html5-1.7.1/b-print-1.7.1/cr-1.5.4/date-1.1.0/fc-3.3.3/fh-3.1.9/kt-2.6.2/r-2.2.9/rg-1.1.3/rr-1.2.8/sc-2.0.4/sb-1.1.0/sp-1.3.0/sl-1.3.3/datatables.min.js"></script>
+
+<style>
+body {
+  font-family: helvetica;
+  font-size: 12px;
+}
+#table_paper {
+  font-size: 13px;
+  width: 100% !important;
+}
+tr.tr_paper {
+  cursor: pointer;
+}
+#small_thumb, #medium_thumb {
+  overflow: auto;
+  white-space: nowrap;
+}
+.paper_page {
+  border: 1px solid #666666;
+  margin: 1px;
+}
+#iframe_paper {
+  width: 100%;
+  position: fixed;
+  margin: 0px;
+  padding: 0px;
+  border: none;
+  
+}
+</style>
+<script>
+  var table;
+  function resizeIframe(obj) {
+    obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+  }
+  function pad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = "0" + num;
+    return num;
+  }
+  $(document).ready( function () {
+    console.log("a");
+    table = $('#table_paper').DataTable({
+      responsive: true,
+      dom: 'BRlfrtip',
+      stateSave: true,
+      buttons: [
+            'colvis'//, 'columnsToggle'
+        ],
+      columnDefs: [
+            {
+                "targets": [ 3, 4, 7],
+                "visible": false
+            }
+        ]
+    });
+
+    function register_paper_click() {
+      $('tr.tr_paper').on( 'click', function (e) {
+        fid = $(this).attr("data-folder");
+        //$("#iframe_paper").attr("src", "/paper/" + fid);
+        
+        var out = "", outm = "";
+        for (let i = 0; i < parseInt($(this).attr("data-pages")); i++) {
+          t = "<img class='paper_page' width='SIZEpx' src='papers/" + fid + "/paper_T" + pad(i, 2) + ".jpg'>";
+          out += t.replace("T", "s").replace("SIZE", "250");
+          outm += t.replace("T", "m").replace("SIZE", "900");
+        }
+        $("#small_thumb").html(out);
+        $("#medium_thumb").html(outm);
+      });
+      $('tr.tr_paper').on( 'dblclick', function (e) {
+        fid = $(this).attr("data-folder");
+        window.open("/paper/" + fid, fid, '_blank');
+
+      } );
+    }
+
+    table.on( 'search.dt', function () {
+      register_paper_click();
+    } );
+    register_paper_click();
+
+
+  } );
+</script>
+</head>
+<body>
+{TABLE}
+<!--<iframe id="iframe_paper" onload="resizeIframe(this)"></iframe>-->
+<div id="small_thumb">{SMALL}</div>
+<div id="medium_thumb">{MEDIUM}</div>
+</body>
+</html>
