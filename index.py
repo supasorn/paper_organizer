@@ -23,8 +23,8 @@ def generateTable(lst):
     out += "<td>" + datetime.fromisoformat(l[1]['published']).strftime("%Y-%m-%d") + "</td>"
     out += "<td>" + datetime.fromisoformat(l[1]['updated']).strftime("%Y-%m-%d") + "</td>"
     out += "<td>" + l[1]['pdf_url'] + "</td>"
-    out += "<td>Tags</td>"
-    out += "<td>Comments</td>"
+    out += "<td class='td_tags'>" + l[1]['tags'] + "</td>"
+    out += "<td class='td_comments'>" + l[1]['comments'] + "</td>"
     out += "<td style='white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis;'>" + l[1]['summary'] + "</td>"
     out += "</tr>"
   out += "</tbody></table>"
@@ -35,6 +35,14 @@ def getMeta(pid):
   f = open("papers/" + pid + "/meta_auto.txt", "r")
   js = json.loads(f.read())
   f.close()
+
+  js2 = {"tags": "", "comments": ""}
+  if os.path.exists("papers/" + pid + "/meta.txt"):
+    f = open("papers/" + pid + "/meta.txt", "r")
+    js2 = json.loads(f.read())
+    f.close()
+  js.update(js2)
+
   return js
 
 def getPaperList():

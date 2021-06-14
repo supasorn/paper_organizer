@@ -22,7 +22,7 @@ tr.tr_paper {
   white-space: nowrap;
 }
 .paper_page {
-  border: 1px solid #666666;
+  border: 1px solid #BBBBBB;
   margin: 1px;
 }
 #iframe_paper {
@@ -31,7 +31,18 @@ tr.tr_paper {
   margin: 0px;
   padding: 0px;
   border: none;
-  
+}
+#text_tags {
+  width: 100%;
+}
+#text_comments {
+  width: 100%;
+}
+#meta_edit table {
+  font-size: 11px;
+}
+#div_paper {
+  display: none;
 }
 </style>
 <script>
@@ -51,29 +62,41 @@ tr.tr_paper {
       dom: 'BRlfrtip',
       stateSave: true,
       buttons: [
-            'colvis'//, 'columnsToggle'
-        ],
+        'colvis'//, 'columnsToggle'
+      ],
       columnDefs: [
-            {
-                "targets": [ 3, 4, 7],
-                "visible": false
-            }
-        ]
+        {
+          "targets": [ 3, 4, 7],
+          "visible": false
+        }
+      ],
     });
 
     function register_paper_click() {
       $('tr.tr_paper').on( 'click', function (e) {
         fid = $(this).attr("data-folder");
         //$("#iframe_paper").attr("src", "/paper/" + fid);
-        
         var out = "", outm = "";
         for (let i = 0; i < parseInt($(this).attr("data-pages")); i++) {
           t = "<img class='paper_page' width='SIZEpx' src='papers/" + fid + "/paper_T" + pad(i, 2) + ".jpg'>";
           out += t.replace("T", "s").replace("SIZE", "250");
-          outm += t.replace("T", "m").replace("SIZE", "900");
+          outm += t.replace("T", "m").replace("SIZE", "1000");
         }
         $("#small_thumb").html(out);
         $("#medium_thumb").html(outm);
+        $("#div_paper").show();
+        $("#paper_title").html($(this).find(".td_title").text());
+        //console.log( table.row( this ).data().title);
+        //console.log(table.columns().names());
+        ncols = table.columns().header().length;
+        for (let i = 0; i < ncols; i++) {
+          let colname = table.column(i).header().innerHTML;
+          if (colname == 'Tags') {
+            $("#text_tags").val(table.row(this).data()[i]);
+          } else if (colname == 'Comments') {
+            $("#text_comments").val(table.row(this).data()[i]);
+          }
+        }
       });
       $('tr.tr_paper').on( 'dblclick', function (e) {
         fid = $(this).attr("data-folder");
@@ -82,7 +105,7 @@ tr.tr_paper {
       } );
     }
 
-    table.on( 'search.dt', function () {
+    table.on( 'draw.dt', function () {
       register_paper_click();
     } );
     register_paper_click();
@@ -93,8 +116,26 @@ tr.tr_paper {
 </head>
 <body>
 {TABLE}
+
 <!--<iframe id="iframe_paper" onload="resizeIframe(this)"></iframe>-->
-<div id="small_thumb">{SMALL}</div>
-<div id="medium_thumb">{MEDIUM}</div>
+<div id="div_paper">
+  <h1 id="paper_title"></h1>
+  <div id="meta_edit">
+    <form>
+      <table width="100%">
+        <tr><td width="30%">Tags:</td><td>Comments:</td><td></td></tr>
+        <tr><td><textarea id="text_tags" name="tags" rows="6"></textarea></td>
+          <td><textarea id="text_comments" name="comments" rows="6"></textarea></td>
+          <td width="1%">
+            <button type="button">Save Changes</button>
+          </td></tr>
+      </table>
+      
+      
+    </form>
+  </div>
+  <div id="small_thumb">{SMALL}</div>
+  <div id="medium_thumb">{MEDIUM}</div>
+</div>
 </body>
 </html>

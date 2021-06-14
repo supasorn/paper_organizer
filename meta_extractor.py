@@ -4,6 +4,7 @@ from pdf2image import convert_from_path
 import json
 import datetime
 import os
+import glob
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-arxiv', type=str, default="2010.04595")
@@ -11,15 +12,19 @@ parser.add_argument('-arxiv', type=str, default="2010.04595")
 args = parser.parse_args()
 
 def pdf2jpg(f, prefix, dpi):
-  images = convert_from_path(f, dpi=dpi)
+  images = convert_from_path(f, dpi=dpi, jpegopt={
+    "quality": 100,
+    "progressive": True,
+    "optimize": True
+  }, fmt='jpeg')
   for i, img in enumerate(images):
-    img.save(f.replace(".pdf", "_%s%02d.jpg" % (prefix, i)))
+    img.save(f.replace(".pdf", "_%s%02d.jpg" % (prefix, i)), quality=95)
+    print(img)
 
 def myconverter(o):
   if isinstance(o, datetime.datetime):
     return o.__str__()
   elif isinstance(o, arxiv.Result.Author):
-    print("yes")
     print(o.name)
     return o.name
 
@@ -60,7 +65,18 @@ def meta_extract(fid):
   print(js)
   # print(json.dumps(paper))
 
+def rejpeg():
+  for d in os.listdir("papers/"):
+    print(d)
+    pdf2jpg(f"papers/{d}/paper.pdf", "m", 150)
+    pdf2jpg(f"papers/{d}/paper.pdf", "s", 80)
 
-# pdf2jpg("papers/2010.04595/paper.pdf", "m", 150)
+# for f in glob.glob("papers/*/*.png"):
+  # os.system("rm " + f)
+# print()
+# rejpeg()
+
+
+# pdf2jpg("papers/2012.03927/paper.pdf", "m", 150)
 # pdf2jpg("papers/2010.04595/paper.pdf", "s", 80)
 meta_extract(args.arxiv)

@@ -10,4 +10,5 @@ with open("tmp.txt", "r") as fi:
 
 with Pool(10) as p:
   p.map(f, fs)
+
 print(fs)
