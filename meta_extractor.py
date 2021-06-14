@@ -28,8 +28,8 @@ def myconverter(o):
     print(o.name)
     return o.name
 
-def meta_extract(fid):
-  name_without_v = fid.split("v")[0]
+def meta_extract(pid):
+  name_without_v = pid.split("v")[0]
 
   search = arxiv.Search(id_list=[name_without_v])
   paper = next(search.get())

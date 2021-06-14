@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import os
 import json
 from datetime import datetime
@@ -76,6 +76,17 @@ def getPaper(subpath):
   template = repTem(template, "SMALL", out)
   template = repTem(template, "MEDIUM", outm)
   return template
+
+@app.route("/savechanges", methods=['GET', 'POST'])
+def savechanges():
+  pid = request.form["pid"]
+  js = {"tags": request.form["tags"],
+        "comments": request.form["comments"]}
+
+  with open("papers/" + pid + "/meta.txt", "w") as fo:
+    fo.write(json.dumps(js))
+
+  return "yes"
 
 @app.route("/")
 def hello():

@@ -47,6 +47,8 @@ tr.tr_paper {
 </style>
 <script>
   var table;
+  var selectedRow;
+  var pid;
   function resizeIframe(obj) {
     obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
   }
@@ -54,6 +56,9 @@ tr.tr_paper {
     num = num.toString();
     while (num.length < size) num = "0" + num;
     return num;
+  }
+  function unesc(st) {
+    return st.replace('&lt;','<').replace('&gt;', '>');
   }
   $(document).ready( function () {
     console.log("a");
@@ -74,11 +79,10 @@ tr.tr_paper {
 
     function register_paper_click() {
       $('tr.tr_paper').on( 'click', function (e) {
-        fid = $(this).attr("data-folder");
-        //$("#iframe_paper").attr("src", "/paper/" + fid);
+        pid = $(this).attr("data-folder");
         var out = "", outm = "";
         for (let i = 0; i < parseInt($(this).attr("data-pages")); i++) {
-          t = "<img class='paper_page' width='SIZEpx' src='papers/" + fid + "/paper_T" + pad(i, 2) + ".jpg'>";
+          t = "<img class='paper_page' width='SIZEpx' src='papers/" + pid + "/paper_T" + pad(i, 2) + ".jpg'>";
           out += t.replace("T", "s").replace("SIZE", "250");
           outm += t.replace("T", "m").replace("SIZE", "1000");
         }
@@ -89,18 +93,20 @@ tr.tr_paper {
         //console.log( table.row( this ).data().title);
         //console.log(table.columns().names());
         ncols = table.columns().header().length;
+        selectedRow = table.row(this);
+
         for (let i = 0; i < ncols; i++) {
           let colname = table.column(i).header().innerHTML;
           if (colname == 'Tags') {
-            $("#text_tags").val(table.row(this).data()[i]);
+            $("#text_tags").val(unesc(table.row(this).data()[i]));
           } else if (colname == 'Comments') {
-            $("#text_comments").val(table.row(this).data()[i]);
+            $("#text_comments").val(unesc(table.row(this).data()[i]));
           }
         }
       });
       $('tr.tr_paper').on( 'dblclick', function (e) {
-        fid = $(this).attr("data-folder");
-        window.open("/paper/" + fid, fid, '_blank');
+        pid = $(this).attr("data-folder");
+        window.open("/paper/" + pid, pid, '_blank');
 
       } );
     }
@@ -110,6 +116,36 @@ tr.tr_paper {
     } );
     register_paper_click();
 
+    function saveChanges() {
+      var ncols = table.columns().header().length;
+      var cdata = selectedRow.data();
+      for (let i = 0; i < ncols; i++) {
+        let colname = table.column(i).header().innerHTML;
+        if (colname == 'Tags') {
+          cdata[i] = $("#text_tags").val();
+        } else if (colname == 'Comments') {
+          cdata[i] = $("#text_comments").val();
+        }
+      }
+      selectedRow.data(cdata);
+      $.ajax({
+        type: "POST",
+        url: "/savechanges",
+        data: {
+          pid: pid,
+          tags: $("#text_tags").val(),
+          comments: $("#text_comments").val()
+        },
+        success: function( data ) {
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          alert(xhr.responseText);
+        }}
+      );
+    }
+    $("#text_tags, #text_comments").bind('change keyup', function() {
+      saveChanges();
+    });
 
   } );
 </script>
@@ -126,9 +162,10 @@ tr.tr_paper {
         <tr><td width="30%">Tags:</td><td>Comments:</td><td></td></tr>
         <tr><td><textarea id="text_tags" name="tags" rows="6"></textarea></td>
           <td><textarea id="text_comments" name="comments" rows="6"></textarea></td>
-          <td width="1%">
-            <button type="button">Save Changes</button>
-          </td></tr>
+          <!--<td width="1%">-->
+            <!--<button type="button" id="save">Save Changes</button>-->
+          <!--</td>-->
+        </tr>
       </table>
       
       
